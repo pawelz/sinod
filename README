@@ -1,0 +1,46 @@
+1. What it is?
+
+   sinod stands for Simple Notification Daemon.
+   
+   It is very simple implementation of notification daemon concept. This program
+   registers DBUS org.freedesktop.Notifications service and prints all incoming
+   notifications on standard output. 
+
+2. What can I use it for?
+
+   unlike other notification daemons sinod does not displays any pop-up
+   windows. It only prints notifications on standard output. Its output can be
+   easily used by other scripts or programs. It can also be used in
+   environment without X windows at all (hey, think about notifications from
+   your screened irc session on shell acount a few thousands kilometers away!)
+
+3. Who wrote it?
+
+   sinod is based on statnot program written by Henrik Hallberg.
+   See http://www.k2h.se/code/statnot.html for more details.
+
+   Current version is maintained by Paweł Zuzelski <pawelz@pld-linux.org>
+
+4. But can I use it? So great software... It must be quite expensive!
+
+   It should be. But it is not. It is licensed under the terms of GNU GPL
+   version 3 or any later. That means you can use it, modify, redistribute,
+   even sell.
+
+5. It is not exactly what I need.
+
+   So try other implementations of notification daemon:
+
+   * statnot:
+     http://www.k2h.se/code/statnot.html
+
+   * notification-daemon:
+     http://www.galago-project.org/
+
+   * notification-daemon-xfce:
+     http://goodies.xfce.org/projects/applications/notification-daemon-xfce
+
+   * knotify4
+     Part of KDE Desktop Environment 4
+
+Enjoy!
