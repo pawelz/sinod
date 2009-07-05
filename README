@@ -6,6 +6,8 @@
    registers DBUS org.freedesktop.Notifications service and prints all incoming
    notifications on standard output. 
 
+   For more information visit sinod homepage: http://xatka.net/~z/sinod
+
 2. What can I use it for?
 
    unlike other notification daemons sinod does not displays any pop-up
@@ -14,20 +16,26 @@
    environment without X windows at all (hey, think about notifications from
    your screened irc session on shell acount a few thousands kilometers away!)
 
-3. Who wrote it?
+3. Where to download it from?
+
+   You can download source code from git repository:
+
+     git clone git://github.com/pawelz/sinod.git
+
+4. Who wrote it?
 
    sinod is based on statnot program written by Henrik Hallberg.
    See http://www.k2h.se/code/statnot.html for more details.
 
    Current version is maintained by Paweł Zuzelski <pawelz@pld-linux.org>
 
-4. But can I use it? So great software... It must be quite expensive!
+5. But can I use it? So great software... It must be quite expensive!
 
    It should be. But it is not. It is licensed under the terms of GNU GPL
    version 3 or any later. That means you can use it, modify, redistribute,
    even sell.
 
-5. It is not exactly what I need.
+6. It is not exactly what I need.
 
    So try other implementations of notification daemon:
 
@@ -42,5 +50,11 @@
 
    * knotify4
      Part of KDE Desktop Environment 4
+
+7. I've found a bug! What should I do?
+
+   No, You have not found a bug. You have just discovered a new feature.
+   Please send me New Feature Report by mail <z.sinod@xatka.net>. I will try
+   to improve it :D
 
 Enjoy!
