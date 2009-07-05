@@ -1,22 +1,24 @@
 #!/usr/bin/env python
-
+# vim: set fileencoding=utf-8
 #
-#   statnot - Status and Notifications
+#   sinod - Simple Notifications Daemon
 #
-#   Lightweight notification-(to-become)-deamon intended to be used
-#   with lightweight WMs, like dwm.
+#   Based on statnot by Henrik Hallberg (halhen@k2h.se) http://code.k2h.se
+#
+#   Lightweight notification-deamon intended to be used with scripts in
+#   lightweight WMs, like dwm or with non-x environments.
+#
 #   Receives Desktop Notifications (including libnotify / notify-send)
 #   See: http://www.galago-project.org/specs/notification/0.9/index.html
 #
 #   Note: VERY early prototype, to get feedback.
 #
 #   Copyright (c) 2009 by Henrik Hallberg (halhen@k2h.se)
-#   http://code.k2h.se
-#   Please report bugs or feature requests by e-mail.
+#   Copyright (c) 2009 by Paweł Zuzelski (pawelz@pld-linux.org)
 #
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2 of the License, or
+#   the Free Software Foundation; either version 3 of the License, or
 #   (at your option) any later version.
 #
 #   This program is distributed in the hope that it will be useful,
@@ -32,8 +34,6 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 import gobject
-import os
-import subprocess
 import sys
 import thread
 import time
@@ -49,25 +49,9 @@ MAX_NOTIFY_TIMEOUT = 5000 # milliseconds
 # Maximum number of characters in a notification. 
 NOTIFICATION_MAX_LENGTH = 100 # number of characters
 
-# Time between regular status updates
-STATUS_UPDATE_INTERVAL = 2.0 # seconds
-
-# Command to fetch status text from. We read from stdout.
-# Each argument must be an element in the array
-STATUS_COMMAND = ["/bin/sh", "%s/.statusline.sh" % os.getenv("HOME")] 
-
-# update_text(text) is called when the status text should be updated
-# If there is a pending notification to be formatted, it is appended as
-# the final argument to the STATUS_COMMAND, e.g. as $1 in default shellscript
-# Uncomment the appropriate one below, or write your own.
-
-# dummy (echo text)
-#def update_text(text):
-#    print text
-
-# dwm
 def update_text(text):
-    subprocess.call(["xsetroot", "-name", text])
+    if len(text):
+        print text
 
 # ===== CONFIGURATION END =====
 
@@ -90,7 +74,7 @@ def add_notification(notif):
 
         notification_queue.append(notif)
 
-def next_notification(pop = False):
+def next_notification():
     # No need to be thread safe here. Also most common scenario
     if not notification_queue:
         return None
@@ -100,77 +84,32 @@ def next_notification(pop = False):
         while len(notification_queue) > 1 and notification_queue[0][2] == 0:
             notification_queue.pop(0)
 
-        if pop:
-            return notification_queue.pop(0)
-        else:
-            return notification_queue[0]
+        return notification_queue.pop(0)
 
-def get_statustext(notification = ''):
-    output = ''
-    try:
-        if not notification:
-            command = STATUS_COMMAND
-        else:
-            command = STATUS_COMMAND + [notification]
-            
-        p = subprocess.Popen(command, stdout=subprocess.PIPE)
-
-        # Get first line
-        output = p.stdout.readline()[:-1]
-    except:
-        sys.stderr.write("%s: could not read status message (%s)\n"
-                         % (sys.argv[0], ' '.join(STATUS_COMMAND)))
-
-    # Error - STATUS_COMMAND didn't exist or delivered empty result
-    # Fallback to notification only
-    if not output:
-        output = notification
-        
-    return output
-    
 def message_thread(dummy):
-    last_status_update = 0
+    last_notification = 0
     last_notification_update = 0
     current_notification_text = ''
     
     while 1:
         notif = next_notification()
         current_time = time.time()
-        update_status = False
+        do_notify = False
 
         if notif:
             if notif[1] != current_notification_text:
-                update_status = True
+                do_notify = True
 
-            elif current_time > last_notification_update + notif[2]:
-                # If requested timeout is zero, notification shows until
-                # a new notification arrives or a regular status mesasge
-                # cleans it
-                # This way is a bit risky, but works. Keep an eye on this
-                # when changing code
-                if notif[2] != 0:
-                    update_status = True
-
-                # Pop expired notification
-                next_notification(True)
-                notif = next_notification()
-
-            if update_status == True:
-                last_notification_update = current_time
-                
-        if current_time > last_status_update + STATUS_UPDATE_INTERVAL:
-            update_status = True
-
-        if update_status:
+        if do_notify:
             if notif:
                 current_notification_text = notif[1]
             else:
                 current_notification_text = ''
                 
-            update_text(get_statustext(current_notification_text))
-            last_status_update = current_time
+            update_text(current_notification_text)
+            last_notification = current_time
                 
-        time.sleep(0.1)		
+        time.sleep(1)		
 
 class NotificationFetcher(dbus.service.Object):
     _id = 0
@@ -221,6 +160,9 @@ if __name__ == '__main__':
     context = gobject.MainLoop().get_context()
     thread.start_new_thread(message_thread, (None,))
     
-    while 1:
-        context.iteration(True)
+    try:
+        while 1:
+            context.iteration(True)
+    except:
+        exit(0)
 
