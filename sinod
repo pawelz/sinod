@@ -50,8 +50,11 @@ MAX_NOTIFY_TIMEOUT = 5000 # milliseconds
 NOTIFICATION_MAX_LENGTH = 100 # number of characters
 
 def update_text(text):
-    if len(text):
-        print text
+    try:
+        if len(text):
+            print text
+    except UnicodeEncodeError as e:
+        print "SINOD ERROR: " + str(e)
 
 # ===== CONFIGURATION END =====
 
