@@ -49,17 +49,22 @@ MAX_NOTIFY_TIMEOUT = 5000 # milliseconds
 # Maximum number of characters in a notification. 
 NOTIFICATION_MAX_LENGTH = 100 # number of characters
 
-def update_text(text):
+# ===== CONFIGURATION END =====
+
+
+# ===== DISPLAY DRIVERS =====
+
+def display_simple(text):
     try:
         if len(text):
             print text.decode('UTF-8')
     except UnicodeEncodeError as e:
         print "SINOD ERROR: " + str(e)
 
-# ===== CONFIGURATION END =====
+display_driver = display_simple
 
+# ===== DISPLAY DRIVERS END =====
 
-    
 # List of not shown notifications.
 # Array of arrays: [id, text, timeout in s]
 # 0th element is being displayed right now, and may change
@@ -109,7 +114,7 @@ def message_thread(dummy):
             else:
                 current_notification_text = ''
                 
-            update_text(current_notification_text)
+	    display_driver(current_notification_text)
             last_notification = current_time
                 
         time.sleep(1)		
