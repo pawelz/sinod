@@ -33,6 +33,7 @@
 import dbus
 import dbus.service
 import dbus.mainloop.glib
+import getopt
 import gobject
 import sys
 import thread
@@ -51,6 +52,31 @@ NOTIFICATION_MAX_LENGTH = 100 # number of characters
 
 # ===== CONFIGURATION END =====
 
+# ===== SOME USEFUL CONSTANTS =====
+
+VERMAJOR = "0"
+VERMINOR = "0"
+CURVERSION = VERMAJOR + "." + VERMINOR
+
+try:
+    CURVERSION = CURVERSION + "." + VERPATCH
+except NameError:
+    pass
+
+def version():
+    print "sinod " + CURVERSION
+
+def usage():
+    print
+    version()
+    print
+    print "Usage: sinod [-V] [-h]"
+    print
+    print "    -V     display version info and exit"
+    print "    -h     display this help and exit"
+    print
+
+# ===== SOME USEFUL CONSTANTS END =====
 
 # ===== DISPLAY DRIVERS =====
 
@@ -153,9 +179,20 @@ class NotificationFetcher(dbus.service.Object):
         pass
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        print "%s CURVERSION" % sys.argv[0]
-        sys.exit(1)
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hV")
+    except getopt.GetoptError, err:
+        print str(err)
+	usage()
+	sys.exit(2)
+
+    for o, a in opts:
+        if o == "-h":
+	    usage()
+	    sys.exit()
+	elif o == "-V":
+	    version()
+	    sys.exit()
 
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
