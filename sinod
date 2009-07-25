@@ -84,7 +84,8 @@ def usage():
 
 # ===== DISPLAY DRIVERS =====
 
-def display_simple(text):
+def display_simple(notification):
+    text = notification["summary"] + " " + notification["body"]
     try:
         if len(text):
             print text.decode('UTF-8')
@@ -108,8 +109,8 @@ notification_queue_lock = thread.allocate_lock()
 def add_notification(notif):
     with notification_queue_lock:
         for index, n in enumerate(notification_queue):
-            if n[0] == notif[0]: # same id, replace instead of queue
-                n[1:] = notif[1:]
+            if n["id"] == notif["id"]: # same id, replace instead of queue
+                n = notif
                 return
 
         notification_queue.append(notif)
@@ -121,7 +122,7 @@ def next_notification():
 
     with notification_queue_lock:
         # If there are several pending messages, discard the first 0-timeouts
-        while len(notification_queue) > 1 and notification_queue[0][2] == 0:
+        while len(notification_queue) > 1 and notification_queue[0]["timeout"] == 0:
             notification_queue.pop(0)
 
         return notification_queue.pop(0)
@@ -129,7 +130,7 @@ def next_notification():
 def message_thread(dummy):
     last_notification = 0
     last_notification_update = 0
-    current_notification_text = ''
+    current_notification = {}
     
     while 1:
         notif = next_notification()
@@ -137,16 +138,16 @@ def message_thread(dummy):
         do_notify = False
 
         if notif:
-            if notif[1] != current_notification_text:
+            if notif != current_notification:
                 do_notify = True
 
         if do_notify:
             if notif:
-                current_notification_text = notif[1]
+                current_notification = notif
             else:
-                current_notification_text = ''
+                current_notification = {}
                 
-	    display_driver(current_notification_text)
+	    display_driver(current_notification)
             last_notification = current_time
                 
         time.sleep(1)		
@@ -166,10 +167,11 @@ class NotificationFetcher(dbus.service.Object):
             self._id += 1
             notification_id = self._id
 			
-        text = ("%s %s" % (summary, body)).strip()
-        add_notification( [notification_id,
-                          text[:NOTIFICATION_MAX_LENGTH],
-                          int(expire_timeout) / 1000.0] )
+	add_notification( {"id": notification_id,
+                           "summary": summary,
+                           "body": body,
+                           "timeout": int(expire_timeout) / 1000.0} )
+
         return notification_id
 		
     @dbus.service.method("org.freedesktop.Notifications", in_signature='', out_signature='as')
