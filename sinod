@@ -70,10 +70,14 @@ def usage():
     print
     version()
     print
-    print "Usage: sinod [-V] [-h]"
+    print "Usage: sinod [-V] [-h] [-d DRIVER]"
     print
     print "    -V     display version info and exit"
     print "    -h     display this help and exit"
+    print "    -d     use DRIVER as display driver. Default is \"simple\""
+    print
+    print "Display drivers:"
+    print "    simple    - prints each notification in a new line"
     print
 
 # ===== SOME USEFUL CONSTANTS END =====
@@ -88,6 +92,8 @@ def display_simple(text):
         print "SINOD ERROR: " + str(e)
 
 display_driver = display_simple
+
+driver = {"simple": display_simple}
 
 # ===== DISPLAY DRIVERS END =====
 
@@ -180,7 +186,7 @@ class NotificationFetcher(dbus.service.Object):
 
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hV")
+        opts, args = getopt.getopt(sys.argv[1:], "hVd:")
     except getopt.GetoptError, err:
         print str(err)
 	usage()
@@ -193,6 +199,12 @@ if __name__ == '__main__':
 	elif o == "-V":
 	    version()
 	    sys.exit()
+	elif o == "-d":
+	    try:
+	        display_driver = driver[a]
+            except KeyError:
+	        print "ERROR: Unknown display driver."
+		sys.exit(1)
 
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     session_bus = dbus.SessionBus()
