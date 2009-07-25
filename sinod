@@ -52,7 +52,7 @@ NOTIFICATION_MAX_LENGTH = 100 # number of characters
 def update_text(text):
     try:
         if len(text):
-            print text
+            print text.decode('UTF-8')
     except UnicodeEncodeError as e:
         print "SINOD ERROR: " + str(e)
 
