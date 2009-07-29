@@ -30,6 +30,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import atexit
 import dbus
 import dbus.service
 import dbus.mainloop.glib
@@ -78,6 +79,7 @@ def usage():
     print
     print "Display drivers:"
     print "    simple    - prints each notification in a new line"
+    print "    fancy     - split summary and body"
     print
 
 # ===== SOME USEFUL CONSTANTS END =====
@@ -92,9 +94,35 @@ def display_simple(notification):
     except UnicodeEncodeError as e:
         print "SINOD ERROR: " + str(e)
 
+def display_fancy(notification):
+    print notification["summary"].decode('UTF-8')
+    print notification["body"].decode('UTF-8')
+    print
+
+def display_xml(notification):
+    global first_line
+
+    try:
+        first_line
+    except NameError:
+        print "<?xml version='1.0' encoding='UTF-8'?>"
+	print "<notifications>"
+	atexit.register(display_xml, False)
+	first_line = 1
+
+    if notification:
+        print "  <notification id="+str(notification["id"])+">"
+        print "    <summary>"+notification["summary"].decode('UTF-8')+"</summary>"
+        print "    <body>"+notification["body"].decode('UTF-8')+"</body>"
+        print "  </notification>"
+    else:
+        print "</notifications>"
+
 display_driver = display_simple
 
-driver = {"simple": display_simple}
+driver = {"simple": display_simple,
+          "fancy": display_fancy,
+	  "xml": display_xml}
 
 # ===== DISPLAY DRIVERS END =====
 
