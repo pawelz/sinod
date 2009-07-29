@@ -56,7 +56,7 @@ NOTIFICATION_MAX_LENGTH = 100 # number of characters
 # ===== SOME USEFUL CONSTANTS =====
 
 VERMAJOR = "0"
-VERMINOR = "0"
+VERMINOR = "1"
 CURVERSION = VERMAJOR + "." + VERMINOR
 
 try:
