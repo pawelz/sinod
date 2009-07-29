@@ -80,6 +80,7 @@ def usage():
     print "Display drivers:"
     print "    simple    - prints each notification in a new line"
     print "    fancy     - split summary and body"
+    print "    xml       - XML output"
     print
 
 # ===== SOME USEFUL CONSTANTS END =====
