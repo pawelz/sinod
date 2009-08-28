@@ -1,0 +1,66 @@
+1. Przykłady zastosowania sinod:
+
+1.1. Forwardowanie powiadomień ze zdalnej zascreenowanej sesji ekg2
+
+1.1.1. Koncepcja
+
+Na zdalnej maszynie uruchamiamy ekg2 w DBUS-ie. Do tego samego DBUS-a
+podłączamy program sinod, który będzie przechwytywał powiadomienia i przesyłał
+przez ssh do lokalnej maszyny. Na lokalnej maszynie wysyłamy powiadomienia
+spowrotem do DBUS-a.
+
+1.1.2. Zależności na zdalnej maszynie
+
+  1. libnotify
+  2. python-pynotify
+  3. ekg2 + pytnoif
+  4. sinod
+  5. dbus
+
+1.1.3. Zależności na lokalnej maszynie
+
+  1. libnotify
+  2. dbus
+
+1.1.4 Przygotowanie zdalnej maszyny
+
+Tworzymy sobie następujące skrypty:
+
+==== ~/.ekg2.start ====
+#!/bin/sh
+
+screen -wipe
+
+export LC_ALL=pl_PL.UTF-8
+
+if screen -ls | grep ekg2 2> /dev/null; then
+  exec screen -rU -S ekg2
+else
+  exec screen -U -S ekg2 -- sh -c "dbus-launch | sed 's,^,export ,' > .ekg2.dbus-cookie; . ./.ekg2.dbus-cookie; ekg2; rm .ekg2.dbus-cookie; kill $DBUS_SESSION_PID; killall dbus-daemon"
+fi
+========
+
+==== ~/.ekg2.fetch-notify ====
+#!/bin/sh
+. ./.ekg2.dbus-cookie
+sinod
+========
+
+1.1.5 Przygotowanie lokalnej maszyny
+
+Tworzymy skrypt:
+
+==== ~/.client.sh ====
+#!/bin/sh
+ssh -t example.net ./.ekg2.fetch-notify | (while read a b; do echo "a: $a; b: $b"; notify-send "$a" "$(echo $b | sed s/.$//g)"; done)
+========
+
+1.1.6 Uruchamianie/przywoływanie ekg2
+
+screen -m -d -S rn ~/.client.sh
+ssh -t example.net ./.ekg2.start
+
+1.1.7 Co można zrobić lepiej
+
+sinod robi bałagan z nagłówkami/treściami powiadomień. Trzebaby wywoływać
+sinod z opcją -d xml a następnie interpretować tego xmla w client.sh
